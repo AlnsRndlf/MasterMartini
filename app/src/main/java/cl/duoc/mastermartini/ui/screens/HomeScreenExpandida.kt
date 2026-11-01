@@ -114,7 +114,7 @@ fun HomeScreenExpandida(
                 verticalArrangement = Arrangement.spacedBy(20.dp, Alignment.CenterVertically)
             ) {
                 Text(
-                    text = "Accesos Rápidos (Máximo 3 clics)",
+                    text = "Accesos Rápidos",
                     style = MaterialTheme.typography.headlineMedium,
                     color = MaterialTheme.colorScheme.primary
                 )
