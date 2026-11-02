@@ -4,9 +4,10 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.tooling.preview.Preview
-import cl.duoc.mastermartini.ui.screens.HomeScreen
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Surface
+import androidx.compose.ui.Modifier
+import cl.duoc.mastermartini.navigation.AppNavigation
 import cl.duoc.mastermartini.ui.theme.MasterMartiniTheme
 
 class MainActivity : ComponentActivity() {
@@ -15,16 +16,10 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             MasterMartiniTheme {
-                HomeScreen()
+                Surface(modifier = Modifier.fillMaxSize()) {
+                    AppNavigation()
+                }
             }
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    MasterMartiniTheme {
-        HomeScreen()
     }
 }
