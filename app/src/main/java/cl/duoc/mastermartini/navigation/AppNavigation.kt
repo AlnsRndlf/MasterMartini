@@ -24,19 +24,22 @@ import androidx.navigation.compose.rememberNavController
 import cl.duoc.mastermartini.ui.components.MasterMartiniBottomBar
 import cl.duoc.mastermartini.ui.components.MasterMartiniTopBar
 import cl.duoc.mastermartini.ui.screens.HomeScreen
-import cl.duoc.mastermartini.ui.screens.ProfileScreen
+import cl.duoc.mastermartini.ui.screens.PerfilScreen
+import cl.duoc.mastermartini.ui.screens.RegistroScreen
+import cl.duoc.mastermartini.ui.screens.ResumenRegistroScreen
 import cl.duoc.mastermartini.ui.screens.SettingsScreen
 import cl.duoc.mastermartini.viewmodel.MainViewModel
+import cl.duoc.mastermartini.viewmodel.UsuarioViewModel
 import kotlinx.coroutines.flow.collectLatest
 
 // grafo de navegacion centralizado observando los eventos del MainViewModel
 @Composable
 fun AppNavigation(
-    mainViewModel: MainViewModel = viewModel()
+    mainViewModel: MainViewModel = viewModel(),
+    usuarioViewModel: UsuarioViewModel = viewModel()
 ) {
     val navController = rememberNavController()
 
-    // escucha los eventos emitidos por el MainViewModel
     LaunchedEffect(key1 = Unit) {
         mainViewModel.navigationEvents.collectLatest { event ->
             when (event) {
@@ -66,11 +69,28 @@ fun AppNavigation(
         }
 
         composable(route = Screen.Profile.route) {
-            ProfileScreen(viewModel = mainViewModel)
+            PerfilScreen(
+                viewModel = mainViewModel,
+                usuarioViewModel = usuarioViewModel
+            )
         }
 
         composable(route = Screen.Settings.route) {
             SettingsScreen(viewModel = mainViewModel)
+        }
+
+        composable(route = Screen.Registro.route) {
+            RegistroScreen(
+                mainViewModel = mainViewModel,
+                usuarioViewModel = usuarioViewModel
+            )
+        }
+
+        composable(route = Screen.ResumenRegistro.route) {
+            ResumenRegistroScreen(
+                mainViewModel = mainViewModel,
+                usuarioViewModel = usuarioViewModel
+            )
         }
 
         composable(route = Screen.Catalogo.route) {
@@ -87,15 +107,6 @@ fun AppNavigation(
                 titulo = Screen.FormularioContenido.title,
                 rutaActual = Screen.FormularioContenido.route,
                 descripcion = "Gestión y publicación de Recetas y Cursos Técnicos.",
-                mainViewModel = mainViewModel
-            )
-        }
-
-        composable(route = Screen.Registro.route) {
-            PantallaBaseNavegable(
-                titulo = Screen.Registro.title,
-                rutaActual = Screen.Registro.route,
-                descripcion = "Formulario de Registro y Segmentación de Clientes y Prospectos.",
                 mainViewModel = mainViewModel
             )
         }

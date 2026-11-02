@@ -34,7 +34,7 @@ import cl.duoc.mastermartini.viewmodel.MainViewModel
 
 // pantalla para perfil
 @Composable
-fun ProfileScreen(
+fun PerfilScreen(
     viewModel: MainViewModel = viewModel()
 ) {
     Scaffold(
