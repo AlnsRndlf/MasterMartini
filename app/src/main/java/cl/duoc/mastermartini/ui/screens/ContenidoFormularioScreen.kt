@@ -1,9 +1,16 @@
 package cl.duoc.mastermartini.ui.screens
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.net.Uri
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -14,27 +21,38 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
+import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Inventory2
+import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Title
 import androidx.compose.material3.Button
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import cl.duoc.mastermartini.navigation.Screen
+import cl.duoc.mastermartini.ui.components.ImagenInteligente
 import cl.duoc.mastermartini.ui.components.MasterMartiniBottomBar
 import cl.duoc.mastermartini.ui.components.MasterMartiniTopBar
+import cl.duoc.mastermartini.ui.utils.ImageUriUtils
 import cl.duoc.mastermartini.viewmodel.ContenidoViewModel
 import cl.duoc.mastermartini.viewmodel.MainViewModel
 
@@ -44,8 +62,39 @@ fun ContenidoFormularioScreen(
     mainViewModel: MainViewModel,
     contenidoViewModel: ContenidoViewModel
 ) {
+    val context = LocalContext.current
     val formState by contenidoViewModel.formState.collectAsState()
     val esEdicion = formState.idEdicion != null
+
+    var uriTemporalReceta by remember { mutableStateOf<Uri?>(null) }
+
+    val galeriaRecetaLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        if (uri != null) {
+            contenidoViewModel.onImagenUriChange(uri.toString())
+        }
+    }
+
+    val camaraRecetaLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicture()
+    ) { exito: Boolean ->
+        if (exito && uriTemporalReceta != null) {
+            contenidoViewModel.onImagenUriChange(uriTemporalReceta.toString())
+        }
+    }
+
+    val permisoCamaraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { concedido: Boolean ->
+        if (concedido) {
+            val nuevoUri = ImageUriUtils.crearUriTemporalCamara(context)
+            uriTemporalReceta = nuevoUri
+            camaraRecetaLauncher.launch(nuevoUri)
+        } else {
+            Toast.makeText(context, "Permiso de cámara denegado", Toast.LENGTH_SHORT).show()
+        }
+    }
 
     val tiposContenido = listOf("Receta", "Curso", "Video Técnico")
     val categoriasEspecialidad = listOf(
@@ -87,6 +136,56 @@ fun ContenidoFormularioScreen(
                 style = MaterialTheme.typography.headlineMedium,
                 color = MaterialTheme.colorScheme.primary
             )
+
+            // Fotografía del plato o curso usando ImagenInteligente (Guía 13)
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                ImagenInteligente(
+                    imagenUri = formState.imagenUri?.let { Uri.parse(it) },
+                    tamano = 120.dp,
+                    descripcion = "Foto del producto elaborado"
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    OutlinedButton(
+                        onClick = { galeriaRecetaLauncher.launch("image/*") },
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(52.dp)
+                    ) {
+                        Icon(Icons.Default.PhotoLibrary, contentDescription = null)
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("Foto Galería")
+                    }
+                    OutlinedButton(
+                        onClick = {
+                            val tienePermiso = ContextCompat.checkSelfPermission(
+                                context,
+                                Manifest.permission.CAMERA
+                            ) == PackageManager.PERMISSION_GRANTED
+                            if (tienePermiso) {
+                                val nuevoUri = ImageUriUtils.crearUriTemporalCamara(context)
+                                uriTemporalReceta = nuevoUri
+                                camaraRecetaLauncher.launch(nuevoUri)
+                            } else {
+                                permisoCamaraLauncher.launch(Manifest.permission.CAMERA)
+                            }
+                        },
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(52.dp)
+                    ) {
+                        Icon(Icons.Default.CameraAlt, contentDescription = null)
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("Foto Cámara")
+                    }
+                }
+            }
 
             // 1. Selección de Tipo (Receta, Curso, Video Técnico)
             Text("1. Tipo de Contenido", style = MaterialTheme.typography.titleMedium)
