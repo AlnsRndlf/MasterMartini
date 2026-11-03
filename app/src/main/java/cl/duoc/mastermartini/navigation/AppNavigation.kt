@@ -1,5 +1,8 @@
 package cl.duoc.mastermartini.navigation
 
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -17,6 +20,7 @@ import cl.duoc.mastermartini.ui.screens.RegistroScreen
 import cl.duoc.mastermartini.ui.screens.ResumenRegistroScreen
 import cl.duoc.mastermartini.ui.screens.SettingsScreen
 import cl.duoc.mastermartini.viewmodel.ContenidoViewModel
+import cl.duoc.mastermartini.viewmodel.EstadoViewModel
 import cl.duoc.mastermartini.viewmodel.MainViewModel
 import cl.duoc.mastermartini.viewmodel.UsuarioViewModel
 import kotlinx.coroutines.flow.collectLatest
@@ -25,7 +29,8 @@ import kotlinx.coroutines.flow.collectLatest
 fun AppNavigation(
     mainViewModel: MainViewModel = viewModel(),
     usuarioViewModel: UsuarioViewModel = viewModel(),
-    contenidoViewModel: ContenidoViewModel = viewModel()
+    contenidoViewModel: ContenidoViewModel = viewModel(),
+    estadoViewModel: EstadoViewModel = viewModel()
 ) {
     val navController = rememberNavController()
 
@@ -56,7 +61,9 @@ fun AppNavigation(
 
     NavHost(
         navController = navController,
-        startDestination = Screen.Home.route
+        startDestination = Screen.Home.route,
+        enterTransition = { fadeIn(animationSpec = tween(350)) },
+        exitTransition = { fadeOut(animationSpec = tween(350)) }
     ) {
         composable(route = Screen.Home.route) {
             HomeScreen(viewModel = mainViewModel)
@@ -70,7 +77,10 @@ fun AppNavigation(
         }
 
         composable(route = Screen.Settings.route) {
-            SettingsScreen(viewModel = mainViewModel)
+            SettingsScreen(
+                viewModel = mainViewModel,
+                estadoViewModel = estadoViewModel
+            )
         }
 
         composable(route = Screen.Registro.route) {
