@@ -1,5 +1,6 @@
 package cl.duoc.mastermartini.viewmodel
 
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import cl.duoc.mastermartini.model.UsuarioErrores
 import cl.duoc.mastermartini.model.UsuarioUiState
@@ -9,56 +10,64 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
-
-// gestion del estado y validacion del formulario desaclopado
+// Guía 11 + Guía 13 Parte 2: ViewModel con validación de formulario y estado Uri? para Cámara y Galería
 class UsuarioViewModel : ViewModel() {
 
-    // Estado interno mutable
+    // Estado interno mutable del formulario de cliente/prospecto
     private val _estado = MutableStateFlow(value = UsuarioUiState())
-
-    // Estado expuesto de solo lectura para la UI
     val estado: StateFlow<UsuarioUiState> = _estado.asStateFlow()
+
+    // Guía 13 Parte 2: Variable StateFlow para guardar el URI de la imagen seleccionada o capturada
+    private val _imagenPerfilUri = MutableStateFlow<Uri?>(value = null)
+    val imagenPerfilUri: StateFlow<Uri?> = _imagenPerfilUri.asStateFlow()
+
+    // Guía 13 Parte 2: Funciones para actualizar la imagen desde la galería y desde la cámara
+    fun actualizarImagenGaleria(uri: Uri?) {
+        if (uri != null) {
+            _imagenPerfilUri.value = uri
+        }
+    }
+
+    fun actualizarImagenCamara(uri: Uri?) {
+        if (uri != null) {
+            _imagenPerfilUri.value = uri
+        }
+    }
 
     fun onTipoPerfilChange(valor: String) {
         _estado.update { it.copy(tipoPerfil = valor) }
     }
 
-    // Actualiza el campo nombre y limpia su error
     fun onNombreChange(valor: String) {
         _estado.update {
             it.copy(nombre = valor, errores = it.errores.copy(nombre = null))
         }
     }
 
-    // Actualiza el campo correo y limpia su error
     fun onCorreoChange(valor: String) {
         _estado.update {
             it.copy(correo = valor, errores = it.errores.copy(correo = null))
         }
     }
 
-    // Actualiza el campo clave y limpia su error
     fun onClaveChange(valor: String) {
         _estado.update {
             it.copy(clave = valor, errores = it.errores.copy(clave = null))
         }
     }
 
-    // Actualiza el campo telefono y limpia su error
     fun onTelefonoChange(valor: String) {
         _estado.update {
             it.copy(telefono = valor, errores = it.errores.copy(telefono = null))
         }
     }
 
-    // Actualiza el campo direccion y limpia su error
     fun onDireccionChange(valor: String) {
         _estado.update {
             it.copy(direccion = valor, errores = it.errores.copy(direccion = null))
         }
     }
 
-    // Actualiza el rut de empresa y limpia su error
     fun onRutEmpresaChange(valor: String) {
         _estado.update {
             it.copy(rutEmpresa = valor, errores = it.errores.copy(rutEmpresa = null))
@@ -75,7 +84,6 @@ class UsuarioViewModel : ViewModel() {
         _estado.update { it.copy(tamanoNegocio = valor) }
     }
 
-    // Agrega o quita una especialidad de interes en la encuesta de segmentacion
     fun onTogglePreferencia(especialidad: String) {
         _estado.update { estadoActual ->
             val nuevasPreferencias = if (estadoActual.preferenciasContenido.contains(especialidad)) {
@@ -90,15 +98,12 @@ class UsuarioViewModel : ViewModel() {
         }
     }
 
-    // Actualiza checkbox de aceptacion de terminos
     fun onAceptarTerminosChange(valor: Boolean) {
         _estado.update {
             it.copy(aceptaTerminos = valor, errores = it.errores.copy(terminos = null))
         }
     }
 
-
-    // Validacion global y centralizada del formulario
     fun validarFormulario(): Boolean {
         val estadoActual = _estado.value
 
