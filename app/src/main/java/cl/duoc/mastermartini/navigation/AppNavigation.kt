@@ -1,42 +1,31 @@
 package cl.duoc.mastermartini.navigation
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import cl.duoc.mastermartini.ui.components.MasterMartiniBottomBar
-import cl.duoc.mastermartini.ui.components.MasterMartiniTopBar
+import androidx.navigation.navArgument
+import cl.duoc.mastermartini.ui.screens.ContenidoDetalleScreen
+import cl.duoc.mastermartini.ui.screens.ContenidoFormularioScreen
+import cl.duoc.mastermartini.ui.screens.ContenidoListaScreen
 import cl.duoc.mastermartini.ui.screens.HomeScreen
 import cl.duoc.mastermartini.ui.screens.PerfilScreen
 import cl.duoc.mastermartini.ui.screens.RegistroScreen
 import cl.duoc.mastermartini.ui.screens.ResumenRegistroScreen
 import cl.duoc.mastermartini.ui.screens.SettingsScreen
+import cl.duoc.mastermartini.viewmodel.ContenidoViewModel
 import cl.duoc.mastermartini.viewmodel.MainViewModel
 import cl.duoc.mastermartini.viewmodel.UsuarioViewModel
 import kotlinx.coroutines.flow.collectLatest
 
-// grafo de navegacion centralizado observando los eventos del MainViewModel
 @Composable
 fun AppNavigation(
     mainViewModel: MainViewModel = viewModel(),
-    usuarioViewModel: UsuarioViewModel = viewModel()
+    usuarioViewModel: UsuarioViewModel = viewModel(),
+    contenidoViewModel: ContenidoViewModel = viewModel()
 ) {
     val navController = rememberNavController()
 
@@ -44,7 +33,12 @@ fun AppNavigation(
         mainViewModel.navigationEvents.collectLatest { event ->
             when (event) {
                 is NavigationEvent.NavigateTo -> {
-                    navController.navigate(route = event.route.route) {
+                    val destinoRuta = when (val target = event.route) {
+                        is Screen.Detail -> target.buildRoute()
+                        is Screen.EditarContenido -> target.buildRoute()
+                        else -> target.route
+                    }
+                    navController.navigate(route = destinoRuta) {
                         event.popUpToRoute?.let { popRoute ->
                             popUpTo(route = popRoute.route) {
                                 inclusive = event.inclusive
@@ -94,76 +88,39 @@ fun AppNavigation(
         }
 
         composable(route = Screen.Catalogo.route) {
-            PantallaBaseNavegable(
-                titulo = Screen.Catalogo.title,
-                rutaActual = Screen.Catalogo.route,
-                descripcion = "Catálogo de Recetas, Cursos y Videos Técnicos Master Martini.",
-                mainViewModel = mainViewModel
+            ContenidoListaScreen(
+                mainViewModel = mainViewModel,
+                contenidoViewModel = contenidoViewModel
             )
         }
 
         composable(route = Screen.FormularioContenido.route) {
-            PantallaBaseNavegable(
-                titulo = Screen.FormularioContenido.title,
-                rutaActual = Screen.FormularioContenido.route,
-                descripcion = "Gestión y publicación de Recetas y Cursos Técnicos.",
-                mainViewModel = mainViewModel
+            ContenidoFormularioScreen(
+                mainViewModel = mainViewModel,
+                contenidoViewModel = contenidoViewModel
             )
         }
-    }
-}
 
-@Composable
-private fun PantallaBaseNavegable(
-    titulo: String,
-    rutaActual: String,
-    descripcion: String,
-    mainViewModel: MainViewModel
-) {
-    Scaffold(
-        topBar = {
-            MasterMartiniTopBar(
-                title = titulo,
-                mostrarBotonAtras = true,
-                onBackClick = { mainViewModel.navigateBack() }
-            )
-        },
-        bottomBar = {
-            MasterMartiniBottomBar(
-                currentRoute = rutaActual,
-                onNavigate = { destino -> mainViewModel.navigateTo(destino) }
+        composable(
+            route = "detail_page/{itemId}",
+            arguments = listOf(navArgument("itemId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val id = backStackEntry.arguments?.getString("itemId")?.toIntOrNull() ?: 0
+            ContenidoDetalleScreen(
+                contenidoId = id,
+                mainViewModel = mainViewModel,
+                contenidoViewModel = contenidoViewModel
             )
         }
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .padding(innerPadding)
-                .fillMaxSize()
-                .padding(24.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+
+        composable(
+            route = "editar_contenido_page/{itemId}",
+            arguments = listOf(navArgument("itemId") { type = NavType.StringType })
         ) {
-            Text(
-                text = titulo,
-                style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.primary,
-                textAlign = TextAlign.Center
+            ContenidoFormularioScreen(
+                mainViewModel = mainViewModel,
+                contenidoViewModel = contenidoViewModel
             )
-            Spacer(modifier = Modifier.height(12.dp))
-            Text(
-                text = descripcion,
-                style = MaterialTheme.typography.bodyLarge,
-                textAlign = TextAlign.Center
-            )
-            Spacer(modifier = Modifier.height(24.dp))
-            Button(
-                onClick = { mainViewModel.navigateTo(Screen.Home) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(60.dp)
-            ) {
-                Text("Volver al Inicio")
-            }
         }
     }
 }
