@@ -14,5 +14,6 @@ data class UsuarioUiState(
     val preferenciasContenido: List<String> = emptyList(),
     val aceptaTerminos: Boolean = false,
     val registroCompletado: Boolean = false,
+    val mensajeBackend: String? = null,
     val errores: UsuarioErrores = UsuarioErrores()
 )

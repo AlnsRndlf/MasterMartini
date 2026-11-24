@@ -130,6 +130,13 @@ fun ResumenRegistroScreen(
                         text = "Términos: ${if (estado.aceptaTerminos) "Aceptados" else "No aceptados"}",
                         style = MaterialTheme.typography.titleMedium
                     )
+                    estado.mensajeBackend?.let { estadoServidor ->
+                        Text(
+                            text = "Servidor: $estadoServidor",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
                 }
             }
 

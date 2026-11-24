@@ -20,7 +20,7 @@ import kotlinx.coroutines.launch
 
 class ContenidoViewModel(
     private val repository: ContenidoRepository,
-    precargarAlInicio: Boolean = true
+    sincronizarAlInicio: Boolean = true
 ) : ViewModel() {
 
     private val _filtroTipo = MutableStateFlow("Todos")
@@ -32,14 +32,15 @@ class ContenidoViewModel(
     private val _formState = MutableStateFlow(ContenidoUiState())
     val formState: StateFlow<ContenidoUiState> = _formState.asStateFlow()
 
-    // Lista completa sin filtrar para consultar detalles de forma segura
+    private val _estadoBackend = MutableStateFlow<String?>(null)
+    val estadoBackend: StateFlow<String?> = _estadoBackend.asStateFlow()
+
     val todosLosContenidos: StateFlow<List<Contenido>> = repository.contenidos.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = emptyList()
     )
 
-    // Lista filtrada reactivamente para el catálogo
     val contenidosFiltrados: StateFlow<List<Contenido>> = combine(
         repository.contenidos,
         _filtroTipo,
@@ -55,9 +56,18 @@ class ContenidoViewModel(
     )
 
     init {
-        if (precargarAlInicio) {
-            viewModelScope.launch {
-                repository.precargarSiEstaVacio()
+        if (sincronizarAlInicio) {
+            sincronizarConBackend()
+        }
+    }
+
+    fun sincronizarConBackend() {
+        viewModelScope.launch {
+            val conectado = repository.sincronizarConServidor()
+            _estadoBackend.value = if (conectado) {
+                "Sincronizado con Spring Boot + MySQL"
+            } else {
+                "Modo local (Room): servidor Spring Boot no disponible"
             }
         }
     }
@@ -161,10 +171,15 @@ class ContenidoViewModel(
                     pasos = actual.pasos.trim(),
                     imagenUri = actual.imagenUri
                 )
-                if (actual.idEdicion == null) {
+                val sincronizado = if (actual.idEdicion == null) {
                     repository.insertar(contenido)
                 } else {
                     repository.actualizar(contenido)
+                }
+                _estadoBackend.value = if (sincronizado) {
+                    "Guardado en Spring Boot + MySQL"
+                } else {
+                    "Guardado localmente (sin conexión al servidor)"
                 }
                 prepararNuevoFormulario()
             }
@@ -175,7 +190,12 @@ class ContenidoViewModel(
 
     fun eliminarContenido(contenido: Contenido) {
         viewModelScope.launch {
-            repository.eliminar(contenido)
+            val sincronizado = repository.eliminar(contenido)
+            _estadoBackend.value = if (sincronizado) {
+                "Eliminado en Spring Boot + MySQL"
+            } else {
+                "Eliminado localmente (sin conexión al servidor)"
+            }
         }
     }
 

@@ -8,7 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+//import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -34,12 +34,17 @@ import cl.duoc.mastermartini.ui.components.MasterMartiniTopBar
 import cl.duoc.mastermartini.ui.components.TarjetaContenido
 import cl.duoc.mastermartini.viewmodel.ContenidoViewModel
 import cl.duoc.mastermartini.viewmodel.MainViewModel
+import androidx.compose.material.icons.filled.CloudDone
+import androidx.compose.material.icons.filled.Sync
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.ui.Alignment
 
 @Composable
 fun ContenidoListaScreen(
     mainViewModel: MainViewModel,
     contenidoViewModel: ContenidoViewModel
 ) {
+    val estadoBackend by contenidoViewModel.estadoBackend.collectAsState()
     val listaContenidos by contenidoViewModel.contenidosFiltrados.collectAsState()
     val tipoSeleccionado by contenidoViewModel.filtroTipo.collectAsState()
 
@@ -79,6 +84,35 @@ fun ContenidoListaScreen(
                 .padding(innerPadding)
                 .fillMaxSize()
         ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 16.dp, end = 16.dp, top = 8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.CloudDone,
+                        contentDescription = "Estado servidor",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = estadoBackend ?: "Conectando...",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                OutlinedButton(onClick = { contenidoViewModel.sincronizarConBackend() }) {
+                    Icon(Icons.Default.Sync, contentDescription = "Sincronizar")
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Sincronizar")
+                }
+            }
             // Filtros superiores claros y grandes
             Row(
                 modifier = Modifier

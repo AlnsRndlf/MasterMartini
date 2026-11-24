@@ -31,4 +31,7 @@ interface ContenidoDao {
 
     @Delete
     suspend fun eliminar(contenido: ContenidoEntity)
+
+    @Query("DELETE FROM contenidos_tecnicos")
+    suspend fun eliminarTodos()
 }

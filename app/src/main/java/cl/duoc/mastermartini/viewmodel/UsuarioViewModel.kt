@@ -9,9 +9,14 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-
+import androidx.lifecycle.viewModelScope
+import cl.duoc.mastermartini.data.repository.UsuarioRepository
+import cl.duoc.mastermartini.model.UsuarioBackendDto
+import kotlinx.coroutines.launch
 // Guía 11 + Guía 13 Parte 2: ViewModel con validación de formulario y estado Uri? para Cámara y Galería
-class UsuarioViewModel : ViewModel() {
+class UsuarioViewModel(
+    private val usuarioRepository: UsuarioRepository = UsuarioRepository()
+) : ViewModel() {
 
     // Estado interno mutable del formulario de cliente/prospecto
     private val _estado = MutableStateFlow(value = UsuarioUiState())
@@ -156,6 +161,38 @@ class UsuarioViewModel : ViewModel() {
             )
         }
 
+        if (!hayErrores) {
+            sincronizarUsuarioConBackend()
+        }
+
         return !hayErrores
+    }
+
+    private fun sincronizarUsuarioConBackend() {
+        val actual = _estado.value
+        viewModelScope.launch {
+            try {
+                val dto = UsuarioBackendDto(
+                    tipoPerfil = actual.tipoPerfil,
+                    nombre = actual.nombre.trim(),
+                    correo = actual.correo.trim(),
+                    telefono = actual.telefono.trim(),
+                    direccion = actual.direccion.trim(),
+                    rutEmpresa = actual.rutEmpresa.trim(),
+                    tipoNegocio = actual.tipoNegocio,
+                    tamanoNegocio = actual.tamanoNegocio,
+                    preferenciasContenido = actual.preferenciasContenido.joinToString(", "),
+                    aceptaTerminos = actual.aceptaTerminos
+                )
+                val guardado = usuarioRepository.registrarUsuario(dto)
+                _estado.update {
+                    it.copy(mensajeBackend = "Ficha guardada en MySQL (ID #${guardado.id})")
+                }
+            } catch (e: Exception) {
+                _estado.update {
+                    it.copy(mensajeBackend = "Guardado en sesión local (backend sin conexión)")
+                }
+            }
+        }
     }
 }
