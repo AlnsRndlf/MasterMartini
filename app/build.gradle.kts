@@ -90,4 +90,23 @@ dependencies {
     // --- Retrofit y Gson Converter (Guía 14: Consumo de API REST) ---
     implementation("com.squareup.retrofit2:retrofit:2.11.0")
     implementation("com.squareup.retrofit2:converter-gson:2.11.0")
+
+    // --- Pruebas Unitarias (Guía 15: Kotest + JUnit 5 + MockK + Coroutines Test) ---
+    testImplementation("io.kotest:kotest-runner-junit5:5.8.0")
+    testImplementation("io.kotest:kotest-assertions-core:5.8.0")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.10.0")
+    testImplementation("io.mockk:mockk:1.13.10")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.0")
+
+    // --- Pruebas Instrumentadas y de UI (Compose UI Test gestionado por BOM) ---
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+    androidTestImplementation(libs.androidx.espresso.core)
+    androidTestImplementation(libs.androidx.junit)
+    debugImplementation(libs.androidx.compose.ui.test.manifest)
+    debugImplementation(libs.androidx.compose.ui.tooling)
+}
+
+tasks.withType<Test>().configureEach {
+    useJUnitPlatform()
 }
