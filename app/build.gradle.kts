@@ -36,6 +36,24 @@ android {
     buildFeatures {
         compose = true
     }
+
+    signingConfigs {
+        create("release") {
+            storeFile = file("keystore/mastermartini_release.jks")
+            storePassword = "Martini2026!"
+            keyAlias = "mastermartini_key"
+            keyPassword = "Martini2026!"
+        }
+    }
+
+    buildTypes {
+        release {
+            signingConfig = signingConfigs.getByName("release")
+            optimization {
+                enable = false
+            }
+        }
+    }
 }
 
 ksp {
