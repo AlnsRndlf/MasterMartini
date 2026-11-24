@@ -11,6 +11,8 @@ sealed class Screen(val route: String, val title: String) {
     data object Profile : Screen(route = "profile_page", title = "Mi Perfil")
     data object Settings : Screen(route = "settings_page", title = "Accesibilidad")
 
+    data object ComunidadApi : Screen(route = "comunidad_api_page", title = "Comunidad (API)")
+
     // ruta con argumentos para ver el detalle de una receta, curso o video
     data class Detail(val itemId: String) : Screen(
         route = "detail_page/{itemId}",

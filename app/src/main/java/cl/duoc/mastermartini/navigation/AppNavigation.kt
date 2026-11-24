@@ -25,6 +25,8 @@ import cl.duoc.mastermartini.viewmodel.EstadoViewModel
 import cl.duoc.mastermartini.viewmodel.MainViewModel
 import cl.duoc.mastermartini.viewmodel.UsuarioViewModel
 import kotlinx.coroutines.flow.collectLatest
+import cl.duoc.mastermartini.ui.screens.PostScreen
+import cl.duoc.mastermartini.viewmodel.PostViewModel
 
 @Composable
 fun AppNavigation(
@@ -33,7 +35,8 @@ fun AppNavigation(
     usuarioViewModel: UsuarioViewModel = viewModel(),
     contenidoViewModel: ContenidoViewModel = viewModel(
         factory = ContenidoViewModel.provideFactory(LocalContext.current)
-    )
+    ),
+    postViewModel: PostViewModel = viewModel()
 ) {
     val navController = rememberNavController()
 
@@ -133,6 +136,14 @@ fun AppNavigation(
             ContenidoFormularioScreen(
                 mainViewModel = mainViewModel,
                 contenidoViewModel = contenidoViewModel
+            )
+        }
+
+        composable(route = Screen.ComunidadApi.route) {
+            PostScreen(
+                viewModel = postViewModel,
+                onBackClick = { mainViewModel.navigateBack() },
+                onNavigate = { destino -> mainViewModel.navigateTo(destino) }
             )
         }
     }

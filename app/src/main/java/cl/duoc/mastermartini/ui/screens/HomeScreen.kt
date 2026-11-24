@@ -35,6 +35,7 @@ import cl.duoc.mastermartini.ui.theme.MasterMartiniTheme
 import cl.duoc.mastermartini.ui.utils.obtenerWindowSizeClass
 import cl.duoc.mastermartini.viewmodel.MainViewModel
 import kotlinx.coroutines.launch
+import androidx.compose.material.icons.filled.Public
 
 @Composable
 fun HomeScreen(
@@ -71,6 +72,16 @@ fun HomeScreen(
                     onClick = {
                         scope.launch { drawerState.close() }
                         viewModel.navigateTo(Screen.Catalogo)
+                    },
+                    modifier = Modifier.padding(horizontal = 12.dp)
+                )
+                NavigationDrawerItem(
+                    label = { Text("Comunidad Gastronómica (API)") },
+                    selected = false,
+                    icon = { Icon(Icons.Default.Public, contentDescription = null) },
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        viewModel.navigateTo(Screen.ComunidadApi)
                     },
                     modifier = Modifier.padding(horizontal = 12.dp)
                 )
