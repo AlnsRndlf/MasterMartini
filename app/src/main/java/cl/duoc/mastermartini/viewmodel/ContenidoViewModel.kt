@@ -1,7 +1,8 @@
 package cl.duoc.mastermartini.viewmodel
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
+import android.content.Context
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import cl.duoc.mastermartini.data.local.AppDataBase
 import cl.duoc.mastermartini.data.repository.ContenidoRepository
@@ -17,45 +18,48 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class ContenidoViewModel(application: Application) : AndroidViewModel(application) {
+class ContenidoViewModel(
+    private val repository: ContenidoRepository,
+    precargarAlInicio: Boolean = true
+) : ViewModel() {
 
-    private val repository: ContenidoRepository
-
-    // Filtros reactivos para el catálogo (Receta, Curso, Video Técnico y Categoría)
     private val _filtroTipo = MutableStateFlow("Todos")
     val filtroTipo: StateFlow<String> = _filtroTipo.asStateFlow()
 
     private val _filtroCategoria = MutableStateFlow("Todas")
     val filtroCategoria: StateFlow<String> = _filtroCategoria.asStateFlow()
 
-    // Estado del formulario de creación/edición
     private val _formState = MutableStateFlow(ContenidoUiState())
     val formState: StateFlow<ContenidoUiState> = _formState.asStateFlow()
 
-    // Lista de contenidos filtrada reactivamente usando .filter (Guía 3)
-    val contenidosFiltrados: StateFlow<List<Contenido>>
+    // Lista completa sin filtrar para consultar detalles de forma segura
+    val todosLosContenidos: StateFlow<List<Contenido>> = repository.contenidos.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = emptyList()
+    )
+
+    // Lista filtrada reactivamente para el catálogo
+    val contenidosFiltrados: StateFlow<List<Contenido>> = combine(
+        repository.contenidos,
+        _filtroTipo,
+        _filtroCategoria
+    ) { lista, tipo, categoria ->
+        lista
+            .filter { tipo == "Todos" || it.tipo.equals(tipo, ignoreCase = true) }
+            .filter { categoria == "Todas" || it.categoria.equals(categoria, ignoreCase = true) }
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = emptyList()
+    )
 
     init {
-        val dao = AppDataBase.getDatabase(application).contenidoDao()
-        repository = ContenidoRepository(dao)
-
-        viewModelScope.launch {
-            repository.precargarSiEstaVacio()
+        if (precargarAlInicio) {
+            viewModelScope.launch {
+                repository.precargarSiEstaVacio()
+            }
         }
-
-        contenidosFiltrados = combine(
-            repository.contenidos,
-            _filtroTipo,
-            _filtroCategoria
-        ) { lista, tipo, categoria ->
-            lista
-                .filter { tipo == "Todos" || it.tipo.equals(tipo, ignoreCase = true) }
-                .filter { categoria == "Todas" || it.categoria.equals(categoria, ignoreCase = true) }
-        }.stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = emptyList()
-        )
     }
 
     fun seleccionarFiltroTipo(tipo: String) {
@@ -66,7 +70,6 @@ class ContenidoViewModel(application: Application) : AndroidViewModel(applicatio
         _filtroCategoria.value = categoria
     }
 
-    // --- Gestión del Formulario CRUD ---
     fun prepararNuevoFormulario() {
         _formState.value = ContenidoUiState()
     }
@@ -119,7 +122,6 @@ class ContenidoViewModel(application: Application) : AndroidViewModel(applicatio
         _formState.update { it.copy(imagenUri = uri) }
     }
 
-    // Validación desacoplada del formulario de Contenidos Técnicos (IE 2.2.1)
     fun validarYGuardarContenido(): Boolean {
         val actual = _formState.value
 
@@ -175,5 +177,16 @@ class ContenidoViewModel(application: Application) : AndroidViewModel(applicatio
         viewModelScope.launch {
             repository.eliminar(contenido)
         }
+    }
+
+    companion object {
+        fun provideFactory(context: Context): ViewModelProvider.Factory =
+            object : ViewModelProvider.Factory {
+                @Suppress("UNCHECKED_CAST")
+                override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                    val dao = AppDataBase.getDatabase(context.applicationContext).contenidoDao()
+                    return ContenidoViewModel(ContenidoRepository(dao)) as T
+                }
+            }
     }
 }

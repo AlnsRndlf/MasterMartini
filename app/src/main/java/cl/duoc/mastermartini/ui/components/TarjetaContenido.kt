@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Delete
@@ -29,9 +30,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import cl.duoc.mastermartini.model.Contenido
-
+import coil.compose.AsyncImage
 
 @Composable
 fun TarjetaContenido(
@@ -57,9 +60,19 @@ fun TarjetaContenido(
             modifier = Modifier.padding(18.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
+            // Renderiza la foto adjunta si el contenido tiene imagenUri registrada
+            if (!contenido.imagenUri.isNullOrBlank()) {
+                AsyncImage(
+                    model = contenido.imagenUri,
+                    contentDescription = "Fotografía de ${contenido.titulo}",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(160.dp)
+                        .clip(RoundedCornerShape(12.dp)),
+                    contentScale = ContentScale.Crop
+                )
+            }
 
-
-            // header
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -98,7 +111,6 @@ fun TarjetaContenido(
                 }
             }
 
-            // titulo principal destacado arriba al centro
             Text(
                 text = contenido.titulo,
                 style = MaterialTheme.typography.titleLarge,
@@ -113,7 +125,6 @@ fun TarjetaContenido(
 
             HorizontalDivider()
 
-            // boton principal llamativo
             Button(
                 onClick = onVerDetalle,
                 modifier = Modifier
@@ -128,7 +139,6 @@ fun TarjetaContenido(
                 )
             }
 
-            // botones secundarios  gestion CRUD con icono y texto autoexplicativo
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)

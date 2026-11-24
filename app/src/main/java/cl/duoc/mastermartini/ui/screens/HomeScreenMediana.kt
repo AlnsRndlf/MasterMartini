@@ -22,14 +22,10 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -40,151 +36,132 @@ import androidx.compose.ui.unit.dp
 import cl.duoc.mastermartini.R
 import cl.duoc.mastermartini.ui.theme.MasterMartiniTheme
 
-//para pantallas medinas o "cuadradas" ; tablets , plegables
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreenMediana(
     onIrACatalogo: () -> Unit = {},
     onIrARegistro: () -> Unit = {},
     onIrASubirContenido: () -> Unit = {}
 ) {
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(text = "Master Martini Chile - Vista Tablet Mediana") },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary
-                )
-            )
-        }
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .padding(innerPadding)
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(24.dp),
-            verticalArrangement = Arrangement.spacedBy(24.dp)
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(24.dp),
+        verticalArrangement = Arrangement.spacedBy(24.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(20.dp)
         ) {
-            // Cabecera en fila (Logo a la izquierda, texto de bienvenida a la derecha)
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(20.dp)
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.logo),
-                    contentDescription = "Logo Master Martini",
-                    modifier = Modifier
-                        .size(140.dp),
-                    contentScale = ContentScale.Fit
+            Image(
+                painter = painterResource(id = R.drawable.logo),
+                contentDescription = "Logo Master Martini",
+                modifier = Modifier.size(140.dp),
+                contentScale = ContentScale.Fit
+            )
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "Plataforma de Contenidos Técnicos",
+                    color = MaterialTheme.colorScheme.primary,
+                    style = MaterialTheme.typography.headlineMedium
                 )
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = "Plataforma de Contenidos Técnicos",
-                        color = MaterialTheme.colorScheme.primary,
-                        style = MaterialTheme.typography.headlineMedium
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Capacitación continua para panaderías, pastelerías, chocolaterías, casinos y restaurantes.",
+                    style = MaterialTheme.typography.bodyLarge
+                )
+            }
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Card(
+                modifier = Modifier.weight(1f),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                )
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Icon(
+                        imageVector = Icons.Default.School,
+                        contentDescription = "Cursos",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(32.dp)
                     )
                     Spacer(modifier = Modifier.height(8.dp))
+                    Text(text = "Cursos y Videos", style = MaterialTheme.typography.titleLarge)
                     Text(
-                        text = "Capacitación continua para panaderías, pastelerías, chocolaterías, casinos y restaurantes.",
-                        style = MaterialTheme.typography.bodyLarge
+                        text = "Chocolatería, masas de hoja, bollería y pastelería de vitrina.",
+                        style = MaterialTheme.typography.bodyMedium
                     )
                 }
             }
 
-            // Dos tarjetas agrupadas lado a lado
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            Card(
+                modifier = Modifier.weight(1f),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                )
             ) {
-                Card(
-                    modifier = Modifier.weight(1f),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Icon(
+                        imageVector = Icons.Default.Restaurant,
+                        contentDescription = "Insumos",
+                        tint = MaterialTheme.colorScheme.secondary,
+                        modifier = Modifier.size(32.dp)
                     )
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Icon(
-                            imageVector = Icons.Default.School,
-                            contentDescription = "Cursos",
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(32.dp)
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(text = "Cursos y Videos", style = MaterialTheme.typography.titleLarge)
-                        Text(
-                            text = "Chocolatería, masas de hoja, bollería y pastelería de vitrina.",
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                    }
-                }
-
-                Card(
-                    modifier = Modifier.weight(1f),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(text = "Recetario Técnico", style = MaterialTheme.typography.titleLarge)
+                    Text(
+                        text = "Paso a paso con insumos profesionales Master Martini.",
+                        style = MaterialTheme.typography.bodyMedium
                     )
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Icon(
-                            imageVector = Icons.Default.Restaurant,
-                            contentDescription = "Insumos",
-                            tint = MaterialTheme.colorScheme.secondary,
-                            modifier = Modifier.size(32.dp)
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(text = "Recetario Técnico", style = MaterialTheme.typography.titleLarge)
-                        Text(
-                            text = "Paso a paso con insumos profesionales Master Martini.",
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                    }
                 }
             }
+        }
 
-            // Fila de botones grandes de acción directa
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                Button(
-                    onClick = onIrACatalogo,
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(60.dp)
-                ) {
-                    Icon(Icons.Default.MenuBook, contentDescription = null)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Ver Catálogo")
-                }
-
-                Button(
-                    onClick = onIrASubirContenido,
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(60.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.secondary
-                    )
-                ) {
-                    Icon(Icons.Default.Restaurant, contentDescription = null)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Subir Receta")
-                }
-            }
-
-            OutlinedButton(
-                onClick = onIrARegistro,
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Button(
+                onClick = onIrACatalogo,
                 modifier = Modifier
-                    .fillMaxWidth()
+                    .weight(1f)
                     .height(60.dp)
             ) {
-                Icon(Icons.Default.PersonAdd, contentDescription = null)
-                Spacer(modifier = Modifier.width(10.dp))
-                Text("Registrar o Actualizar Perfil de Cliente / Prospecto")
+                Icon(Icons.Default.MenuBook, contentDescription = null)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Ver Catálogo")
             }
+
+            Button(
+                onClick = onIrASubirContenido,
+                modifier = Modifier
+                    .weight(1f)
+                    .height(60.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.secondary
+                )
+            ) {
+                Icon(Icons.Default.Restaurant, contentDescription = null)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Subir Receta")
+            }
+        }
+
+        OutlinedButton(
+            onClick = onIrARegistro,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(60.dp)
+        ) {
+            Icon(Icons.Default.PersonAdd, contentDescription = null)
+            Spacer(modifier = Modifier.width(10.dp))
+            Text("Registrar o Actualizar Perfil de Cliente / Prospecto")
         }
     }
 }

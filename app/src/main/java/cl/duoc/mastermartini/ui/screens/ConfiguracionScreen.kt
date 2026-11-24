@@ -62,7 +62,7 @@ import cl.duoc.mastermartini.viewmodel.MainViewModel
 @Composable
 fun SettingsScreen(
     viewModel: MainViewModel = viewModel(),
-    estadoViewModel: EstadoViewModel = viewModel()
+    estadoViewModel: EstadoViewModel
 ) {
     val estado = estadoViewModel.activo.collectAsState()
     val mostrarMensaje = estadoViewModel.mostrarMensaje.collectAsState()

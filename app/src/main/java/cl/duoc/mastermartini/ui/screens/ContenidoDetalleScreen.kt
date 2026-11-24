@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -46,13 +47,16 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import cl.duoc.mastermartini.navigation.Screen
 import cl.duoc.mastermartini.ui.components.MasterMartiniBottomBar
 import cl.duoc.mastermartini.ui.components.MasterMartiniTopBar
 import cl.duoc.mastermartini.viewmodel.ContenidoViewModel
 import cl.duoc.mastermartini.viewmodel.MainViewModel
+import coil.compose.AsyncImage
 
 @Composable
 fun ContenidoDetalleScreen(
@@ -60,10 +64,9 @@ fun ContenidoDetalleScreen(
     mainViewModel: MainViewModel,
     contenidoViewModel: ContenidoViewModel
 ) {
-    val lista by contenidoViewModel.contenidosFiltrados.collectAsState()
+    val lista by contenidoViewModel.todosLosContenidos.collectAsState()
     val contenido = lista.find { it.id == contenidoId }
 
-    // Estado interactivo con rememberSaveable y animación para inscripción/guardado
     var inscritoOGuardado by rememberSaveable(contenidoId) { mutableStateOf(false) }
 
     val colorInscripcion by animateColorAsState(
@@ -112,6 +115,18 @@ fun ContenidoDetalleScreen(
                     style = MaterialTheme.typography.titleLarge
                 )
             } else {
+                if (!contenido.imagenUri.isNullOrBlank()) {
+                    AsyncImage(
+                        model = contenido.imagenUri,
+                        contentDescription = "Fotografía de ${contenido.titulo}",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(210.dp)
+                            .clip(RoundedCornerShape(16.dp)),
+                        contentScale = ContentScale.Crop
+                    )
+                }
+
                 Text(
                     text = contenido.titulo,
                     style = MaterialTheme.typography.headlineMedium,
@@ -156,7 +171,6 @@ fun ContenidoDetalleScreen(
                     }
                 }
 
-                // Botón animado de inscripción o guardado con feedback visual (Guía 12)
                 Button(
                     onClick = { inscritoOGuardado = !inscritoOGuardado },
                     colors = ButtonDefaults.buttonColors(containerColor = colorInscripcion),

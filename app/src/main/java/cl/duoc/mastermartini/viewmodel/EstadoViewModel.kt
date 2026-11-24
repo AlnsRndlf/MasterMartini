@@ -1,9 +1,11 @@
 package cl.duoc.mastermartini.viewmodel
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
+import android.content.Context
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import cl.duoc.mastermartini.data.local.EstadoDataStore
+import cl.duoc.mastermartini.data.local.PreferenciasStorage
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -11,52 +13,41 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
-class EstadoViewModel(application: Application) : AndroidViewModel(application) {
+class EstadoViewModel(
+    private val storage: PreferenciasStorage,
+    private val delayCargaMs: Long = 1500L,
+    private val delayMensajeMs: Long = 2000L
+) : ViewModel() {
 
-    // DataStore creado con contexto de aplicación
-    private val estadoDataStore = EstadoDataStore(context = application)
-
-    // Estado que representa si el modo especial está activado o no (null = cargando)
     private val _activo = MutableStateFlow<Boolean?>(value = null)
     val activo: StateFlow<Boolean?> = _activo.asStateFlow()
 
-    // Estado para mostrar u ocultar el mensaje visual animado
     private val _mostrarMensaje = MutableStateFlow(value = false)
     val mostrarMensaje: StateFlow<Boolean> = _mostrarMensaje.asStateFlow()
 
-    // Estado adicional de alto contraste persistente
     private val _altoContraste = MutableStateFlow(value = false)
     val altoContraste: StateFlow<Boolean> = _altoContraste.asStateFlow()
 
     init {
-        // Al iniciar el ViewModel, cargamos el estado desde DataStore
         cargarEstado()
     }
 
     fun cargarEstado() {
         viewModelScope.launch {
             _activo.value = null
-            // Simula demora para mostrar CircularProgressIndicator
-            delay(timeMillis = 1500)
-            _activo.value = estadoDataStore.obtenerEstado().first() ?: false
-            _altoContraste.value = estadoDataStore.obtenerAltoContraste().first()
+            if (delayCargaMs > 0) delay(timeMillis = delayCargaMs)
+            _activo.value = storage.obtenerEstado().first() ?: false
+            _altoContraste.value = storage.obtenerAltoContraste().first()
         }
     }
 
     fun alternarEstado() {
         viewModelScope.launch {
-            // Alternamos el valor actual
             val nuevoValor = !(_activo.value ?: false)
-
-            // Guardamos persistentemente en DataStore
-            estadoDataStore.guardarEstado(nuevoValor)
-
-            // Actualizamos el flujo reactivo
+            storage.guardarEstado(nuevoValor)
             _activo.value = nuevoValor
-
-            // Mostramos el mensaje visual animado por 2 segundos
             _mostrarMensaje.value = true
-            delay(timeMillis = 2000)
+            if (delayMensajeMs > 0) delay(timeMillis = delayMensajeMs)
             _mostrarMensaje.value = false
         }
     }
@@ -64,11 +55,21 @@ class EstadoViewModel(application: Application) : AndroidViewModel(application) 
     fun alternarAltoContraste() {
         viewModelScope.launch {
             val nuevo = !_altoContraste.value
-            estadoDataStore.guardarAltoContraste(nuevo)
+            storage.guardarAltoContraste(nuevo)
             _altoContraste.value = nuevo
             _mostrarMensaje.value = true
-            delay(timeMillis = 2000)
+            if (delayMensajeMs > 0) delay(timeMillis = delayMensajeMs)
             _mostrarMensaje.value = false
         }
+    }
+
+    companion object {
+        fun provideFactory(context: Context): ViewModelProvider.Factory =
+            object : ViewModelProvider.Factory {
+                @Suppress("UNCHECKED_CAST")
+                override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                    return EstadoViewModel(EstadoDataStore(context.applicationContext)) as T
+                }
+            }
     }
 }

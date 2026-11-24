@@ -5,6 +5,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -27,10 +28,12 @@ import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun AppNavigation(
+    estadoViewModel: EstadoViewModel,
     mainViewModel: MainViewModel = viewModel(),
     usuarioViewModel: UsuarioViewModel = viewModel(),
-    contenidoViewModel: ContenidoViewModel = viewModel(),
-    estadoViewModel: EstadoViewModel = viewModel()
+    contenidoViewModel: ContenidoViewModel = viewModel(
+        factory = ContenidoViewModel.provideFactory(LocalContext.current)
+    )
 ) {
     val navController = rememberNavController()
 
